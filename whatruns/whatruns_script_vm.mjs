@@ -50,9 +50,6 @@ function checkTechNamesSchema(value) {
         return false;
     }
     let keys = Object.keys(value);
-    if (keys.length === 0) {
-        return false;
-    }
     for (let key of keys) {
         if(typeof key !== 'string') {
             return false;
@@ -99,7 +96,7 @@ function parseWhatRunsData(techNamesScript) {
         return checkTechNamesSchema(entry[1]);
     });
 
-    if(objectCandidates.length === 0) {
+    if (objectCandidates.length === 0) {
         throw new Error('No valid tech names object found');
     } else if(objectCandidates.length > 1) {
         throw new Error('Multiple valid tech names objects found');

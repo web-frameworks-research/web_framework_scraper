@@ -8,6 +8,9 @@ async function getIPAddresses(domainName) {
                 if (err.code === 'ENODATA') {
                     resolve([]);
                 }
+                if (err.code === 'ENOTFOUND') {
+                    resolve([]);
+                }
                 reject(err);
             } else {
                 resolve(addresses);
@@ -18,6 +21,9 @@ async function getIPAddresses(domainName) {
         dns.resolve6(domainName, (err, addresses) => {
             if (err) {
                 if (err.code === 'ENODATA') {
+                    resolve([]);
+                }
+                if (err.code === 'ENOTFOUND') {
                     resolve([]);
                 }
                 reject(err);
@@ -56,4 +62,4 @@ async function cloudCheck(domainName) {
 // console.log(await cloudCheck('omduggineni.com'));
 // console.log(await cloudCheck('dev.to'));
 
-export { getIPAddresses };
+export { cloudCheck };

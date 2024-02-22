@@ -1,6 +1,5 @@
 import { JSDOM } from 'jsdom';
 import { parseWhatRunsData } from './whatruns_script_vm.mjs';
-import { throttleFunctionCall } from './throttle_function_call.mjs';
 
 const downloadWhatRunsScript = async (domainName) => {
     const { window } = await JSDOM.fromURL(
@@ -15,7 +14,7 @@ const downloadWhatRunsScript = async (domainName) => {
     return techNamesScript;
 };
 
-const getWhatRunsData = throttleFunctionCall(async (domainName) => {
+const getWhatRunsData = async (domainName) => {
     const techNamesScript = await downloadWhatRunsScript(domainName);
     const techNamesObject = parseWhatRunsData(techNamesScript);
 
@@ -23,7 +22,9 @@ const getWhatRunsData = throttleFunctionCall(async (domainName) => {
     dates.map(parseInt);
     let latestDate = Math.max(...dates);
     return techNamesObject[latestDate];
-}, 25);
+}
+
+//console.log(await getWhatRunsData('synergia.librus.pl'));
 
 export { getWhatRunsData };
 

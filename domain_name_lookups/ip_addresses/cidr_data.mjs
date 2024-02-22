@@ -8,20 +8,16 @@ import { githubPagesIPAddresses } from "./github_pages_cidr.mjs";
 
 let allIPAddresses = awsIPAddresses.concat(azureIpAddresses).concat(googleIPAddresses).concat(cloudflareIPAddresses).concat(githubPagesIPAddresses);
 
-console.log(`Found ${allIPAddresses.length} public cloud IP address ranges.`);
-
-let ipAddressCategories = {};
 for (let i = 0; i < allIPAddresses.length; i++) {
-    let [ip, name] = allIPAddresses[i];
-    if (!ipAddressCategories[name]) {
-        ipAddressCategories[name] = [];
-    }
-    ip = new IPCIDR(ip);
-    ipAddressCategories[name].push([ip.start({ type: "bigInteger" }), ip.end({ type: "bigInteger" })]);
+    let ip = new IPCIDR(allIPAddresses[i][0]);
+    allIPAddresses[i][0] = [ip.start({ type: "bigInteger" }), ip.end({ type: "bigInteger" })];
 }
-for(let name in ipAddressCategories) {
-    ipAddressCategories[name] = ipAddressCategories[name].sort((a, b) => a[0] > b[0] ? 1 : -1);
-}
+
+allIPAddresses.sort((a, b) => a[0][0] > b[0][0] ? 1 : -1);
+
+let allIPAddressesRanges = allIPAddresses.map(([ip, _]) => ip);
+let allIPAddressesNames = allIPAddresses.map(([_, name]) => name);
+console.log(`Found ${allIPAddresses.length} public cloud IP address ranges.`);
 
 //let totalNumberOfIPAddresses = allIPAddresses.map(([ip, name]) => ip.getAmount()).reduce((a, b) => a + b, 0);
 //console.log(`Found ${BigInt(totalNumberOfIPAddresses)} public cloud IP addresses`);
@@ -38,7 +34,7 @@ function rangeListBinaryCheck(num, rangeList) {
         const [start, end] = rangeList[mid];
 
         if (num >= start && num <= end) {
-            return true; // Number is within the current range
+            return mid; // Number is within the current range
         } else if (num < start) {
             right = mid - 1; // Search the left half
         } else {
@@ -46,7 +42,7 @@ function rangeListBinaryCheck(num, rangeList) {
         }
     }
 
-    return false; // Number is not within any range
+    return null; // Number is not within any range
 }
 
 function checkIPAddresses(ipAddresses) {
@@ -54,12 +50,9 @@ function checkIPAddresses(ipAddresses) {
     let results = new Set();
     
     for (let i = 0; i < ipAddresses.length; i++){
-        for (let category in ipAddressCategories) {
-            //console.log(category, ipAddressCategories[category]);
-            if (rangeListBinaryCheck(ipAddresses[i], ipAddressCategories[category])) {
-                results.add(category);
-                break;
-            }
+        let val = rangeListBinaryCheck(ipAddresses[i], allIPAddressesRanges);
+        if (val !== null) {
+            results.add(allIPAddressesNames[val]);
         }
     }
 
