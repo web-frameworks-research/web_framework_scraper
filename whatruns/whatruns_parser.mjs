@@ -19,12 +19,15 @@ const getWhatRunsData = async (domainName) => {
     const techNamesObject = parseWhatRunsData(techNamesScript);
 
     const dates = Object.keys(techNamesObject);
+    if(dates.length === 0) {
+        return { date: null, data: {} };
+    }
     dates.map(parseInt);
     let latestDate = Math.max(...dates);
-    return techNamesObject[latestDate];
+    return { date: latestDate, data: techNamesObject[latestDate] };
 }
 
-//console.log(await getWhatRunsData('synergia.librus.pl'));
+//console.log(await getWhatRunsData('xalabahia.com'));
 
 export { getWhatRunsData };
 

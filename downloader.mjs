@@ -4,18 +4,13 @@ import { throttleFunctionCall } from './utils/throttle_function_call.mjs';
 import { remainingDomains, updateProgress } from './utils/track_progress.mjs';
 
 const getData = throttleFunctionCall(async (domainName) => {
-    try {
-        const cloudCheckResult = await cloudCheck(domainName);
-        const whatrunsData = await getWhatRunsData(domainName);
-        return {
-            cloudCheck: cloudCheckResult,
-            whatrunsData: whatrunsData,
-        };
-    } catch (e) {
-        console.error(`Error getting data for ${domainName}: ${e}`);
-        return null;
-    }
-}, 25);
+    const cloudCheckResult = await cloudCheck(domainName);
+    const whatrunsData = await getWhatRunsData(domainName);
+    return {
+        cloudCheck: cloudCheckResult,
+        whatrunsData: whatrunsData,
+    };
+}, 30);
 
 const ranks = [
     1000,
@@ -41,6 +36,8 @@ for (const rank of ranks) {
         const dataCall = await getData(domainName);
         dataCall().then((data) => {
             updateProgress(domainName, JSON.stringify(data));
+        }).catch((e) => {
+            console.error(`Error getting data for ${domainName}: ${e}`);
         });
     }
 }

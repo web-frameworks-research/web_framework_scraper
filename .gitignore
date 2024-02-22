@@ -1,1 +1,3 @@
 node_modules/
+domains_*.txt
+store.db

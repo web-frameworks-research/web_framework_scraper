@@ -23,20 +23,20 @@ function any(exceptions = {}) {
 function removeOnReadyScope(techNamesScript) {
     // remove "$(document).ready(function(e) {" from the beginning of the script
     // and "})" from the end of the script
-    const functionHeaderRegex = /^\$\( *document *\) *\. *ready\( *function\( *e *\) *\{/;
+    const functionHeaderRegex = /^\$\( *document *\) *\. *ready\( *function\( *[A-Za-z] *\) *\{/;
     if (functionHeaderRegex.test(techNamesScript)) {
         techNamesScript = techNamesScript.replace(functionHeaderRegex, '');
     } else {
         throw new Error('Unexpected script format');
     }
-    const endingRegex = /\}\);?$/;
+    const endingRegex = /\}\)\;?$/;
     if(endingRegex.test(techNamesScript)) {
         techNamesScript = techNamesScript.replace(endingRegex, '');
     }
     return techNamesScript;
 }
 
-function checkTechNamesSchema(value) {
+function checkTechNamesSchema(value, check_empty_object = true) {
     if(value === undefined || value === null) {
         return false;
     }
@@ -50,6 +50,9 @@ function checkTechNamesSchema(value) {
         return false;
     }
     let keys = Object.keys(value);
+    if (check_empty_object && keys.length === 0) {
+        return false;
+    }
     for (let key of keys) {
         if(typeof key !== 'string') {
             return false;
@@ -97,8 +100,17 @@ function parseWhatRunsData(techNamesScript) {
     });
 
     if (objectCandidates.length === 0) {
-        throw new Error('No valid tech names object found');
-    } else if(objectCandidates.length > 1) {
+        let objectCandidates2 = Object.entries(techNamesScriptContext).filter((entry) => {
+            return checkTechNamesSchema(entry[1], false);
+        });
+        if (objectCandidates2.length === 0) {
+            throw new Error('No valid tech names object found');
+        } else if (objectCandidates2.every(([_, value]) => Object.keys(value).length === 0)) {
+            return {};
+        } else {
+            throw new Error('No valid tech names object found');
+        }
+    } else if (objectCandidates.length > 1) {
         throw new Error('Multiple valid tech names objects found');
     }
     //console.log(`found tech names object at varname ${objectCandidates[0][0]}`)

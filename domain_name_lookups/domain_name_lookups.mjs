@@ -1,46 +1,24 @@
-import dns from 'node:dns';
+import Tangerine from 'tangerine';
 import { checkIPAddresses } from './ip_addresses/cidr_data.mjs';
+import { dnsServerIPAddresses } from './dns_server_data.mjs';
 
-async function getIPAddresses(domainName) {
-    const ipv4_addrs = new Promise((resolve, reject) => {
-        dns.resolve4(domainName, (err, addresses) => {
-            if (err) {
-                if (err.code === 'ENODATA') {
-                    resolve([]);
-                }
-                if (err.code === 'ENOTFOUND') {
-                    resolve([]);
-                }
-                reject(err);
-            } else {
-                resolve(addresses);
-            }
-        });
-    });
-    const ipv6_addrs = new Promise((resolve, reject) => {
-        dns.resolve6(domainName, (err, addresses) => {
-            if (err) {
-                if (err.code === 'ENODATA') {
-                    resolve([]);
-                }
-                if (err.code === 'ENOTFOUND') {
-                    resolve([]);
-                }
-                reject(err);
-            } else {
-                resolve(addresses);
-            }
-        });
-    });
-    return (await ipv4_addrs).concat(await ipv6_addrs);
-}
+const dns = new Tangerine();
+
+dns.setServers([
+    "1.1.1.1",
+    "1.0.0.1",
+    "8.8.8.8",
+    "8.8.4.4",
+    ...dnsServerIPAddresses
+]);
 
 async function cloudCheck(domainName) {
-    const ipAddresses = await getIPAddresses(domainName);
+    const ipAddresses = (await dns.lookup(domainName, { all: true }))
+        .map((result) => result.address);
     return checkIPAddresses(ipAddresses);
 }
 
-// console.log(await cloudCheck('www.npmjs.com'));
+//console.log(await cloudCheck('www.npmjs.com'));
 // console.log(await cloudCheck('www.google.com'));
 // console.log(await cloudCheck('www.cloudflare.com'));
 // console.log(await cloudCheck('www.microsoft.com'));
