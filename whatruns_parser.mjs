@@ -2,7 +2,7 @@ import { JSDOM } from 'jsdom';
 import { parseWhatRunsData } from './whatruns_script_vm.mjs';
 import { throttleFunctionCall } from './throttle_function_call.mjs';
 
-const downloadWhatRunsScript = throttleFunctionCall(async (domainName) => {
+const downloadWhatRunsScript = async (domainName) => {
     const { window } = await JSDOM.fromURL(
         `https://www.whatruns.com/website/${domainName}`,
         {
@@ -13,9 +13,9 @@ const downloadWhatRunsScript = throttleFunctionCall(async (domainName) => {
     const techNamesScript = window.document.querySelector('body > script:nth-child(6)').textContent;
     //console.log("Downloaded!")
     return techNamesScript;
-}, 25);
+};
 
-const getWhatRunsData = async (domainName) => {
+const getWhatRunsData = throttleFunctionCall(async (domainName) => {
     const techNamesScript = await downloadWhatRunsScript(domainName);
     const techNamesObject = parseWhatRunsData(techNamesScript);
 
@@ -23,8 +23,7 @@ const getWhatRunsData = async (domainName) => {
     dates.map(parseInt);
     let latestDate = Math.max(...dates);
     return techNamesObject[latestDate];
-};
+}, 25);
 
-for (let i = 0; i < 1000000; i++) {
-    getWhatRunsData('noteflight.com').then(() => console.log(`done with request ${i}`));
-}
+export { getWhatRunsData };
+

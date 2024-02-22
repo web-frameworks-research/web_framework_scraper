@@ -9,24 +9,13 @@ function throttleFunctionCall(fn, num_concurrent) {
     }
     
     return async (...args) => {
-        if (running < num_concurrent) {
-            running++;
-            let value;
-            try {
-                value = await fn(...args);
-            } catch (e) {
-                running--;
-                try_run_queue();
-                throw e;
-            }
-            running--;
-            try_run_queue();
-            return value;
-        } else {
-            await new Promise((resolve, reject) => {
+        if (running >= num_concurrent) {
+            await new Promise((resolve) => {
                 queue.push(resolve);
             });
-            running++;
+        }
+        running++;
+        return async () => {
             let value;
             try {
                 value = await fn(...args);
@@ -38,7 +27,7 @@ function throttleFunctionCall(fn, num_concurrent) {
             running--;
             try_run_queue();
             return value;
-        }
+        };
     };
 }
 

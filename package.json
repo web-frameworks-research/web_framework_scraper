@@ -1,5 +1,7 @@
 {
   "dependencies": {
+    "ip-bigint": "^8.0.2",
+    "ip-cidr": "^4.0.0",
     "js-beautify": "^1.15.1",
     "jsdom": "^24.0.0",
     "p-throttle": "^6.1.0"
