@@ -35,7 +35,7 @@ for (const rank of ranks) {
         console.log(`(${i}/${domains.length}, rank=${rank}) getting data for ${domainName}`);
         const dataCall = await getData(domainName);
         dataCall().then((data) => {
-            updateProgress(domainName, JSON.stringify(data));
+            updateProgress(domainName, data);
         }).catch((e) => {
             console.error(`Error getting data for ${domainName}: ${e}`);
         });

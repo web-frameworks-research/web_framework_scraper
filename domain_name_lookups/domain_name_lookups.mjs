@@ -9,13 +9,13 @@ dns.setServers([
     "1.0.0.1",
     "8.8.8.8",
     "8.8.4.4",
-    ...dnsServerIPAddresses
+    //...dnsServerIPAddresses
 ]);
 
 async function cloudCheck(domainName) {
     const ipAddresses = (await dns.lookup(domainName, { all: true }))
         .map((result) => result.address);
-    return checkIPAddresses(ipAddresses);
+    return { ipAddresses, detectedCloudPlatforms: checkIPAddresses(ipAddresses) };
 }
 
 //console.log(await cloudCheck('www.npmjs.com'));
