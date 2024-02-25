@@ -2,7 +2,7 @@ import sqlite3 from "better-sqlite3";
 import fs from "fs/promises";
 
 const db = sqlite3("store.db", {});
-db.exec("CREATE TABLE IF NOT EXISTS progress (domain TEXT PRIMARY KEY, data TEXT, rank INTEGER);");
+db.exec("CREATE TABLE IF NOT EXISTS progress (domain TEXT PRIMARY KEY, data TEXT, rank INTEGER) DEFAULT 0 NOT NULL);");
 
 async function loadDomainsFromDisk(rank) {
     const data = await fs.readFile(`domains_${rank}.txt`, "utf-8");
