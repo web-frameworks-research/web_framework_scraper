@@ -2,7 +2,7 @@ import sqlite3 from "better-sqlite3";
 import fs from "fs/promises";
 
 const db = sqlite3("store.db", {});
-db.exec("CREATE TABLE IF NOT EXISTS progress (domain TEXT PRIMARY KEY, data TEXT, rank INTEGER) DEFAULT 0 NOT NULL);");
+db.exec("CREATE TABLE IF NOT EXISTS progress (domain TEXT PRIMARY KEY, data TEXT, rank INTEGER, previously_failed INTEGER CHECK (previously_failed IN (0, 1)) DEFAULT 0 NOT NULL);");
 
 async function loadDomainsFromDisk(rank) {
     const data = await fs.readFile(`domains_${rank}.txt`, "utf-8");
@@ -12,7 +12,7 @@ async function loadDomainsFromDisk(rank) {
 }
 
 async function remainingDomains(rank) {
-    let domains = db.prepare(`SELECT domain FROM progress WHERE data IS NULL AND rank = ${rank}`).all().map((row) => row.domain);
+    let domains = db.prepare(`SELECT domain FROM progress WHERE data IS NULL AND rank = ${rank} ORDER BY previously_failed ASC`).all().map((row) => row.domain);
     if(domains.length === 0) {
         return await loadDomainsFromDisk(rank);
     } else {
@@ -21,6 +21,10 @@ async function remainingDomains(rank) {
 }
 
 function updateProgress(domain, data) {
+    if(data === null) {
+        db.prepare("UPDATE progress SET previously_failed = 1 WHERE domain = ?").run(domain);
+        return;
+    }
     db.prepare("UPDATE progress SET data = ? WHERE domain = ?").run(JSON.stringify(data), domain);
 }
 
