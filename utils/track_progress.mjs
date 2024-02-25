@@ -14,7 +14,12 @@ async function loadDomainsFromDisk(rank) {
 async function remainingDomains(rank) {
     let domains = db.prepare(`SELECT domain FROM progress WHERE data IS NULL AND rank = ${rank} ORDER BY previously_failed ASC`).all().map((row) => row.domain);
     if(domains.length === 0) {
-        return await loadDomainsFromDisk(rank);
+        let domains = db.prepare(`SELECT domain FROM progress WHERE rank = ${rank} ORDER BY previously_failed ASC`).all().map((row) => row.domain);
+        if (domains.length === 0) {
+            return await loadDomainsFromDisk(rank);
+        } else {
+            return [];
+        }
     } else {
         return domains;
     }
